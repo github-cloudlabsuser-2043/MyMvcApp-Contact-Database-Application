@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP app to Azure Web App - lfuenveAppName
+name: Build and deploy ASP.Net Core app to Azure Web App - lfuenveAppName
 
 on:
   push:
@@ -16,23 +16,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
 
-      - name: Restore NuGet packages
-        run: nuget restore
-
-      - name: Publish to folder
-        run: dotnet publish -c Release -o D:\a\MyMvcApp-Contact-Databse-Application\MyMvcApp-Contact-Databse-Application\bin\Release\net8.0\MyMvcApp
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: D:\a\MyMvcApp-Contact-Databse-Application\MyMvcApp-Contact-Databse-Application\bin\Release\net8.0\MyMvcApp
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -45,7 +44,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: ASP-app
+          name: .net-app
       
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -54,4 +53,4 @@ jobs:
           app-name: 'lfuenveAppName'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9103A659333448B49F3485510B1F1DDF }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0918B14A7CA24B159816A4E5F38163B7 }}
